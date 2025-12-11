@@ -1,0 +1,243 @@
+# 《大模型与材料设计》基石篇02：万丈高楼平地起——环境搭建（Conda, VS Code & 常用库）
+
+> **编者按：**
+>
+> 欢迎来到《大模型与材料设计》系列的第二期。在上一期[《序章：AI如何赋能材料科学》](https://www.google.com/search?q=link_to_article_01 "null")中，我们领略了AI在材料研发中的四个强大应用。
+>
+> 从这一期开始，我们将正式动手实践。俗话说“工欲善其事，必先利其器”。对于“AI+材料”研究来说，搭建一个干净、可控、可复现的科研环境，就是我们迈向新范式的第一步，也是最重要的一步。
+>
+> 本期内容将是**“手把手”保姆级教程**，专为零编程基础的材料人设计。我们将**完全基于 VS Code** 这一款强大的工具，打造一个All-in-One的“AI炼丹炉”。
+
+### 1. 灵魂三问：为什么是Conda？什么是环境？
+
+在开始安装之前，我们必须先理解“为什么”：
+
+**Q1: 为什么我不能直接在电脑上装Python？**
+
+* **A:** 你当然可以，但这就像在同一个烧杯里做所有的化学实验。很快，不同实验的产物（A需要试剂v1.0）和（B需要试剂v2.0）就会互相“打架”，导致所有实验都失败。这就是“依赖地狱”（Dependency Hell）。
+
+**Q2: 什么是“环境”（Environment）？**
+
+* **A:** “环境”就像一个 **独立、洁净的实验室工作台** （或手套箱）。你可以在A工作台上安装A实验的“专属试剂”（库），在B工作台上安装B实验的“专属试剂”。它们彼此隔离，互不干扰。
+
+**Q3: Conda是做什么的？**
+
+* **A:** Conda就是你的“ **实验室管理员** ”。它帮你：
+  1. 创建和管理这些独立的工作台（环境）。
+  2. 在每个工作台上安装、更新和卸载“试剂”（软件包，如Numpy, Pymatgen等）。
+
+### 2. 我们的“实验室管理员”：Conda
+
+我们将安装Miniconda，它是Anaconda的精简版，只包含Conda和Python，更干净，更适合我们从头学起。
+
+#### 手把手教学 2.1：下载 Miniconda
+
+请访问Miniconda的官方安装仓库：
+[https://docs.conda.io/en/latest/miniconda.html](https://docs.conda.io/en/latest/miniconda.html "null")
+
+根据你的操作系统下载最新的安装包（请选择 Python 3.x 版本）：
+
+* **Windows用户：** 下载 `.exe` 安装文件 (如 `Miniconda3-latest-Windows-x86_64.exe`)
+* **macOS用户：**
+  * M1/M2/M3 芯片 (Apple Silicon): 下载 `...-MacOSX-arm64.sh`
+  * Intel 芯片: 下载 `...-MacOSX-x86_64.sh`
+* **Linux用户：** 下载 `...-Linux-x86_64.sh`
+
+#### 手把手教学 2.2：安装 Miniconda
+
+* **Windows (!!!最重要的一步!!!):**
+  1. 双击 `.exe` 文件。
+  2. 在 "Installation Type" 界面，选择 "Just Me"。
+  3. 在 "Advanced Installation Options" 界面， **请不要勾选“Add Miniconda3 to my PATH environment variable”** （除非你非常清楚你在做什么）。保持默认的“Register Miniconda3 as the system Python 3.x”即可。
+  4. 一路点击 "Next" 和 "Install" 完成安装。
+* **macOS / Linux:**
+  1. 打开你的“终端”（Terminal）应用。
+  2. `cd` 到你下载 `.sh` 文件的目录（通常是 `cd ~/Downloads`）。
+  3. 运行安装脚本，例如：`bash Miniconda3-latest-MacOSX-arm64.sh`
+  4. 安装过程中，它会问你“Do you wish the installer to initialize Miniconda3 by running conda init?”，请输入 `yes` 并按回车。
+  5. 安装完成后， **关闭并重新打开你的终端** 。
+
+#### 手把手教学 2.3：验证安装（临时步骤）
+
+我们如何知道“实验室管理员”已经就位了？
+
+1. **Windows用户：** 从“开始”菜单找到并打开  **"Anaconda Prompt (Miniconda3)"** 。
+2. **macOS / Linux用户：** 打开你的“终端”（Terminal）。
+
+在打开的终端窗口中，输入以下命令并按回车：
+
+```
+conda --version
+```
+
+如果你看到了 `conda 24.x.x` 类似的字样，恭喜你，Conda已安装成功！
+**（验证成功后，你就可以关掉这个终端了。从现在开始，我们所有的操作都将在VS Code中进行！）**
+
+### 3. 第一个“无菌工作台”：创建Conda环境
+
+在VS Code接管之前，我们至少要先创建一个“工作台”。
+
+ **打开你的终端（Anaconda Prompt或Terminal）** ，输入以下命令：
+
+```
+conda create -n matsci_ai python=3.10
+```
+
+* `conda create`: 告诉管理员“创建一个新工作台”。
+* `-n matsci_ai`: `-n` 代表“名字”（name），我们给这个工作台命名为 `matsci_ai`（材料科学AI）。
+* `python=3.10`: 我们指定这个工作台要预装Python 3.10版本（这是一个稳定且主流的版本）。
+
+Conda会计算依赖并询问你 `Proceed ([y]/n)?`，输入 `y` 并按回车。
+
+创建成功后， **关闭这个终端** 。我们的“地基”已经打好，接下来主角登场。
+
+### 4. 我们的“All-in-One”工作站：VS Code
+
+**从这里开始，你只需要在 VS Code 这一个软件里操作。**
+
+VS Code (Visual Studio Code) 是一个强大的编辑器，可以将你的**“终端” **、** “代码” **和** “Jupyter笔记本”**全部集成在一个窗口中。
+
+**Conda（环境管理员）和 VS Code（工作站）是天作之合。**
+
+#### 手把手教学 4.1：下载并安装 VS Code
+
+访问官网下载并安装（一路“Next”即可）：
+[https://code.visualstudio.com/](https://code.visualstudio.com/ "null")
+
+#### 手把手教学 4.2：安装“灵魂插件”
+
+1. 打开VS Code。
+2. 点击左侧边栏的“扩展”按钮（四个方块图标）。
+3. 在搜索框中，搜索并安装以下两个**必装**插件（都选Microsoft官方的）：
+   * **Python** (by Microsoft)
+   * **Jupyter** (by Microsoft)
+   * *(可选，但推荐) Chinese (Simplified) Language Pack...：* 安装中文语言包。
+
+### 5. “AI+材料”的“常用试剂”：核心库概览
+
+安装好VS Code后，我们来安装这个系列课程中必不可少的“试剂包”。
+
+**重要：我们将直接在VS Code的“集成终端”中完成这一切。**
+
+#### 手把手教学 5.1：在 VS Code 中激活环境
+
+1. 在VS Code中，按 `Ctrl + `` (反引号键，在Tab键上方) 打开“ **集成终端** ”。
+2. 你会看到一个终端窗口出现在VS Code的底部。它启动时可能在 `(base)` 环境。
+3. 首先，**激活**我们刚刚创建的 `matsci_ai` 环境，输入：
+   ```
+   conda activate matsci_ai
+   ```
+4. 你会看到终端提示符（光标）的最左边，从 `(base)` 变成了 `(matsci_ai)`。
+   这表明你**已成功进入**我们专属的工作台！
+
+这一步，可以会遇到问题，我们一步解决它：
+
+1. **打开 "Anaconda Prompt (Miniconda3)"** （就是你之前用来创建环境的那个程序）。
+2. 在 "Anaconda Prompt" 里，**输入**下面这行命令，然后按回车：
+   ```
+   conda init powershell
+   ```
+3. 它可能会显示一些 "modified"（已修改）的信息。
+4. **关键一步：** **完全关闭 VS Code** （不是只关窗口，要彻底退出程序），然后 **重新打开它** 。
+5. 现在，在 VS Code 里按 `Ctrl + `` (反引号) 打开集成终端。
+
+#### 手把手教学 5.2：安装核心库
+
+ **确保你仍在 `(matsci_ai)` 环境中** 。
+
+在VS Code的集成终端里，输入下面的**“一键安装”**命令：
+
+```
+conda install -c conda-forge jupyter jupyterlab pandas numpy matplotlib scikit-learn pymatgen ase
+```
+
+* `-c conda-forge`：这是一个“试剂仓库”的暗号。Conda默认的仓库可能试剂不全，`conda-forge` 是一个更大更全的第三方仓库，我们的很多科学计算包都在这里。
+* `jupyter` / `jupyterlab`: 我们刚才安装的VS Code “Jupyter”插件只是一个“壳子”，这里安装的是Jupyter的“核心引擎”，VS Code会自动调用它。
+
+#### 【重要提示】国内网络加速（“换源”）
+
+在国内，Conda默认的下载服务器（在国外）连接速度很慢，且经常中断，导致安装失败。
+
+**解决方案：** 我们在安装前，先把Conda的“下载地址”指向国内的镜像服务器（如清华大学TUNA镜像源）。
+
+在VS Code的集成终端中（确保已激活 `(matsci_ai)` 环境），**依次复制并运行**以下命令：
+
+```
+conda config --add channels [https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main](https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main)
+conda config --add channels [https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free](https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free)
+conda config --add channels [https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge](https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge)
+
+# 设置搜索时显示通道地址
+conda config --set show_channel_urls yes
+```
+
+配置完成后，Conda在下载时就会自动使用清华镜像源，速度飞快。
+
+**这些“试剂”都是做什么的？（先混个脸熟）**
+
+* `numpy`: 科学计算的基石。它让Python能高效处理“ **数组** ”（比如你的TEM图像像素、DFT计算的电荷密度）。（ **第3期主角** ）
+* `pandas`: 实验数据处理的瑞士军刀。它帮你处理“ **表格** ”数据（比如你的XRD双列数据、电化学循环的CSV文件）。（ **第4期主角** ）
+* `matplotlib` / `seaborn`: 你的科研“ **绘图笔** ”，用于数据可视化。
+* `scikit-learn`: 经典**机器学习**的“百宝箱”（内含线性回归、随机森林、PCA降维等）。
+* `pymatgen` / `ase`:  **"材料人"的专属工具箱** 。它们能帮你读取CIF晶体文件、构建吸附模型、连接Materials Project数据库。
+
+### 6. 你的第一个“AI实验”：在VS Code中运行Jupyter
+
+万事俱备！我们来跑通整个流程。
+
+#### 手把手教学 6.1：打开项目并创建笔记本
+
+1. **打开你的“AI+材料”项目文件夹：**
+   * 在电脑上新建一个文件夹，比如 `D:\Projects\matsci_ai_series`。
+   * 在VS Code中，点击 "文件" (File) -> "打开文件夹..." (Open Folder...)，打开这个你刚创建的空文件夹。
+2. **创建你的第一个Jupyter笔记本：**
+   * 在VS Code中，按 `Ctrl + Shift + P` (macOS: `Cmd + Shift + P`) 打开“命令面板”。
+   * 输入 `Create: New Jupyter Notebook` （输入“Jupyter”一般就会跳出来）并回车。
+   * 你会得到一个名为 `Untitled-1.ipynb` 的“实验记录页”。（你可以 `Ctrl+S` 保存，把它命名为 `test_01.ipynb`）
+
+#### 手把手教学 6.2：连接“试剂台”（选择内核）
+
+**这才是最关键的一步！** 你要告诉VS Code，这个笔记本应该使用哪个“工作台”的“试剂”。
+
+1. 在笔记本的右上角，点击 "Select Kernel"（“选择内核”）。
+2. VS Code会自动检测你电脑上所有的Python环境。
+3. 在弹出的列表中， **找到并选择我们的 `matsci_ai (Python 3.10.x)` 环境** 。
+4. VS Code的右上角和单元格顶部现在会显示 `matsci_ai`，表示连接成功！
+
+#### 手把手教学 6.3：开始实验！
+
+1. 现在，你在这个笔记本的单元格里输入：
+   ```
+   import pymatgen.core as mg
+   import numpy as np
+
+   print("Hello, Material Scientist!")
+   print(f"Pymatgen version: {mg.__version__}")
+   print(f"Numpy version: {np.__version__}")
+   ```
+2. 按下  **`Shift + Enter`** （或点击单元格左侧的“运行”按钮）。
+3. 你会在该单元格下方立刻看到输出结果，它会打印出 "Hello..." 以及你刚刚安装的 `pymatgen` 和 `numpy` 的版本号！
+
+**恭喜！你已经成功打通了从环境搭建到代码运行的全流程！**
+
+**从此，你的工作流变成了：**
+
+1. 打开VS Code。
+2. 打开你的项目文件夹。
+3. 打开或新建 `.ipynb` 文件。
+4. 确保右上角选中的是你 `matsci_ai` 环境。
+5. 开始你的科研！
+
+### 7. 总结与下一期预告
+
+如果你顺利完成了以上所有步骤，你现在已经拥有了一个功能完备且高度集成的“AI+材料”科研环境。
+
+**请检查你的成果：**
+
+1. 你是否能通过 `conda activate matsci_ai` 在VS Code的集成终端里进入环境？
+2. 你是否能在VS Code中创建 `.ipynb` 文件，并成功连接到 `matsci_ai` 内核？
+3. 你是否能在Jupyter单元格中成功运行 `import pymatgen` 和 `import pandas` 而不报错？
+
+如果都可以，请给自己点个赞！
+
+**下一期，我们将正式开始使用这些工具，从《NumPy入门：为什么它是材料数据的“基座”？》开始讲起。**
